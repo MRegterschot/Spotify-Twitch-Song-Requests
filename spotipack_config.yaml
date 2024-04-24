@@ -36,6 +36,10 @@ allow_volume_set: TRUE # allow users with special privileges (set below) to set 
 volume_set_level: ["streamer", "mod"] # ["streamer", "mod", "vip", "everyone"]. Remove /add one or several for different user levels. Don't forget commas between options
 ignore_max_length: ["streamer", "mod"] # ["streamer", "mod", "vip", "everyone"]. Remove /add one or several for different user levels. Don't forget commas between options
 
+## PLAYLIST STUFF ##
+allow_create_playlist: TRUE # allow users with special privileges (set below) to create a playlist
+playlist_create_level: ["streamer"] # ["streamer", "mod", "vip", "everyone"]. Remove /add one or several for different user levels. Don't forget commas between options
+
 ## COMMAND COOLDOWN ##
 use_cooldown: FALSE # TRUE or FALSE to enable or disable command cooldown
 cooldown_duration: 60 # How long a user has to wait in between song requests in seconds

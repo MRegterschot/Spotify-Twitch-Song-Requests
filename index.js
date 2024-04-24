@@ -87,7 +87,9 @@ console.log(`Logged in as ${chatbotConfig.user_name}. Working on channel '${chat
 
 client.on('message', async (channel, tags, message, self) => {
     if(self) return;
-    let messageToLower = message.toLowerCase();
+
+    // codes 56128 and 56320 are the characters that 7tv uses to avoid the duplicate message detection
+    let messageToLower = message.replace(String.fromCharCode(56128, 56320), '').trim().toLowerCase();
 
     if(chatbotConfig.usage_types.includes(commandUsageType)
         && chatbotConfig.command_alias.includes(messageToLower.split(" ")[0])
@@ -117,6 +119,9 @@ client.on('message', async (channel, tags, message, self) => {
     }
     else if (chatbotConfig.allow_vote_skip && messageToLower === '!voteskip' ) {
         await handleVoteSkip(channel, tags[displayNameTag]);
+    }
+    else if (chatbotConfig.allow_create_playlist && messageToLower.split(" ")[0] === '!createplaylist') {
+        await handleCreatePlaylist(channel, messageToLower, tags);
     }
 });
 
@@ -430,6 +435,26 @@ let addSongToQueue = async (songId, channel, callerUsername, tags) => {
     client.say(channel, handleMessageQueries(chatbotConfig.added_to_queue_messages, trackParams));
 }
 
+let handleCreatePlaylist = async (channel, message, tags) => {
+    let eligible = isUserEligible(channel, tags, chatbotConfig.playlist_create_level);
+
+    if (!eligible) return;
+
+    if (message.split(' ').length < 2) {
+        client.say(channel, 'Please provide a name for the playlist!');
+        return;
+    }
+
+    let playlistName = message.split(' ').slice(1).join(' ');
+
+    let spotifyHeaders = getSpotifyHeaders();
+    let res = await axios.post(`https://api.spotify.com/v1/users/${chatbotConfig.spotify_user_id}/playlists`, {
+        name: playlistName
+    }, { headers: spotifyHeaders });
+
+    console.log(res.data.id)
+}
+
 let refreshAccessToken = async () => {
     const params = new URLSearchParams();
     params.append('refresh_token', spotifyRefreshToken);
@@ -459,7 +484,7 @@ function getSpotifyHeaders() {
 let app = express();
 
 app.get('/login', (req, res) => {
-    const scope = 'user-modify-playback-state user-read-playback-state user-read-currently-playing';
+    const scope = 'user-modify-playback-state user-read-playback-state user-read-currently-playing playlist-modify-public';
     const authParams = new URLSearchParams();
     authParams.append('response_type', 'code');
     authParams.append('client_id', client_id);
