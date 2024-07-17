@@ -1,5 +1,7 @@
 const express = require('express');
 
+require('dotenv').config();
+
 const fs = require('fs');
 const YAML = require('yaml');
 
@@ -532,7 +534,7 @@ console.log(`App is running. Visit http://localhost:${expressPort}/login to refr
 open(`http://localhost:${expressPort}/login`);
 
 function setupYamlConfigs () {
-    const configFile = fs.readFileSync('spotipack_config.yaml', 'utf8');
+    const configFile = fs.readFileSync('spotipack_config.dev.yaml', 'utf8');
     let fileConfig = YAML.parse(configFile);
 
     fileConfig = checkIfSetupIsCorrect(fileConfig);
